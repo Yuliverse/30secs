@@ -1,0 +1,769 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thirdy Secondz - Online Board Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Open+Sans:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #007fff 0%, #0066cc 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .game-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
+            color: #fff;
+            text-shadow: 3px 3px 0px #4a5568;
+            margin-bottom: 10px;
+        }
+        
+        .game-subtitle {
+            color: #e2e8f0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .game-setup {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .setup-section {
+            margin-bottom: 25px;
+        }
+        
+        .setup-section h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .team-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .team-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .team-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid #e2e8f0;
+        }
+        
+        .team-color.red { background: #f56565; }
+        .team-color.blue { background: #4299e1; }
+        .team-color.green { background: #48bb78; }
+        .team-color.yellow { background: #ed8936; }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #007fff;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007fff 0%, #0066cc 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 127, 255, 0.4);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 127, 255, 0.6);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: #718096;
+            box-shadow: 0 4px 15px rgba(113, 128, 150, 0.4);
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            box-shadow: 0 4px 15px rgba(245, 101, 101, 0.4);
+        }
+        
+        .game-board {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .scoreboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .team-score {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .team-score.active {
+            border-color: #007fff;
+            background: #edf2f7;
+            transform: scale(1.05);
+        }
+        
+        .team-name {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .team-position {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #007fff;
+        }
+        
+        .game-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .timer {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #f56565;
+            margin-bottom: 20px;
+            font-family: 'Fredoka One', cursive;
+        }
+        
+        .timer.warning {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .card {
+            background: #fff;
+            border: 3px solid #007fff;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            color: #007fff;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .words-list {
+            list-style: none;
+            font-size: 1.3rem;
+            line-height: 2;
+        }
+        
+        .words-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .words-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .round-info {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .winner-announcement {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .winner-announcement h2 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2.5rem;
+            }
+            
+            .timer {
+                font-size: 3rem;
+            }
+            
+            .game-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-header">
+            <h1 class="game-title">🎯 Thirdy Secondz</h1>
+            <p class="game-subtitle">The Ultimate 30-Second Guessing Game!</p>
+        </div>
+        
+        <div id="gameSetup" class="game-setup">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="background: #f7fafc; border: 2px dashed #cbd5e0; border-radius: 10px; padding: 40px 20px; color: #718096; font-weight: 600;">
+                    📢 Advertise Here
+                </div>
+            </div>
+            
+            <div class="setup-section">
+                <h3>👥 Team Setup</h3>
+                <div class="team-inputs">
+                    <div class="team-input">
+                        <div class="team-color red"></div>
+                        <input type="text" id="team1" placeholder="Enter Team 1 name" value="Red Team">
+                    </div>
+                    <div class="team-input">
+                        <div class="team-color blue"></div>
+                        <input type="text" id="team2" placeholder="Enter Team 2 name" value="Blue Team">
+                    </div>
+                    <div class="team-input">
+                        <div class="team-color green"></div>
+                        <input type="text" id="team3" placeholder="Enter Team 3 name (optional)">
+                    </div>
+                    <div class="team-input">
+                        <div class="team-color yellow"></div>
+                        <input type="text" id="team4" placeholder="Enter Team 4 name (optional)">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="setup-section">
+                <h3>🎯 Game Settings</h3>
+                <p style="margin-bottom: 15px;">First team to reach <strong>10 points</strong> wins!</p>
+                <p style="color: #718096; font-size: 0.9rem;">Each correct guess = 1 point. Teams take turns being the describers.</p>
+            </div>
+            
+            <div style="text-align: center;">
+                <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+                    <button class="btn" onclick="randomizeTeams()">🎲 Randomize Team Order</button>
+                    <button class="btn" onclick="startGame()">🚀 Start Game</button>
+                </div>
+                <div id="teamOrder" style="margin-top: 15px; color: #718096; font-style: italic;"></div>
+            </div>
+        </div>
+        
+        <div id="gameBoard" class="game-board">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="background: #f7fafc; border: 2px dashed #cbd5e0; border-radius: 10px; padding: 40px 20px; color: #718096; font-weight: 600;">
+                    📢 Advertise Here
+                </div>
+            </div>
+            
+            <div class="scoreboard" id="scoreboard"></div>
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button class="btn btn-secondary" onclick="goBackToHome()">🏠 Back to Home</button>
+            </div>
+            
+            <div class="round-info" id="roundInfo"></div>
+            
+            <div class="game-area">
+                <div class="timer" id="timer">30</div>
+                
+                <div id="gameCard" class="card hidden">
+                    <h3>🎯 Describe these words to your team:</h3>
+                    <ul class="words-list" id="wordsList"></ul>
+                </div>
+                
+                <div class="game-controls">
+                    <button class="btn" id="startRoundBtn" onclick="startRound()">▶️ Start Round</button>
+                    <button class="btn btn-secondary hidden" id="endRoundBtn" onclick="endRound()">⏹️ End Round</button>
+                </div>
+            </div>
+            
+            <div id="scoreInput" class="card hidden">
+                <h3>📊 How many words did your team guess correctly?</h3>
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 1.2rem; margin-bottom: 15px;">
+                        <strong id="currentTeamName"></strong> - Enter your score:
+                    </div>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="adjustScore(-1)">➖</button>
+                        <span id="scoreDisplay" style="font-size: 2rem; font-weight: bold; color: #007fff; min-width: 60px; display: inline-block;">0</span>
+                        <button class="btn btn-secondary" onclick="adjustScore(1)">➕</button>
+                    </div>
+                    <div style="color: #718096; margin-bottom: 20px;">
+                        Maximum: 5 words per round
+                    </div>
+                    <button class="btn" onclick="submitScore()">✅ Submit Score</button>
+                </div>
+            </div>
+
+            <div id="winnerAnnouncement" class="winner-announcement hidden">
+                <h2>🎉 Congratulations!</h2>
+                <p id="winnerText"></p>
+                <button class="btn" onclick="resetGame()" style="margin-top: 20px;">🔄 Play Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer style="background: rgba(255,255,255,0.1); color: #e2e8f0; text-align: center; padding: 20px; margin-top: 40px; border-radius: 15px;">
+        <div style="margin-bottom: 10px;">
+            <a href="https://www.anythinglikewhat.com/contactus" style="color: #e2e8f0; text-decoration: underline; margin-right: 20px;">📧 Contact Us</a>
+        </div>
+        <div style="font-size: 0.9rem;">
+            © Topline Growth Catalyst · All rights reserved
+        </div>
+    </footer>
+
+    <script>
+        // Game data
+        const gameWords = [
+            ["Leonardo DiCaprio", "Eiffel Tower", "Pizza", "Shakespeare", "Amazon River"],
+            ["Michael Jackson", "Great Wall of China", "Chocolate", "Einstein", "Mount Everest"],
+            ["Oprah Winfrey", "Statue of Liberty", "Sushi", "Mozart", "Sahara Desert"],
+            ["Tom Hanks", "Big Ben", "Hamburger", "Picasso", "Niagara Falls"],
+            ["Beyoncé", "Sydney Opera House", "Ice cream", "Van Gogh", "Grand Canyon"],
+            ["Will Smith", "Taj Mahal", "Pasta", "Beethoven", "Victoria Falls"],
+            ["Jennifer Lawrence", "Colosseum", "Tacos", "Da Vinci", "Angel Falls"],
+            ["Brad Pitt", "Machu Picchu", "Donuts", "Michelangelo", "Yellowstone"],
+            ["Scarlett Johansson", "Stonehenge", "Pancakes", "Monet", "Yosemite"],
+            ["Robert Downey Jr.", "Pyramids of Giza", "Waffles", "Rembrandt", "Banff"],
+            ["Emma Stone", "Notre Dame", "Cookies", "Frida Kahlo", "Zion"],
+            ["Ryan Reynolds", "Golden Gate Bridge", "Brownies", "Andy Warhol", "Glacier"],
+            ["Chris Hemsworth", "Tower Bridge", "Cupcakes", "Georgia O'Keeffe", "Everglades"],
+            ["Angelina Jolie", "Space Needle", "Pie", "Jackson Pollock", "Redwood Forest"],
+            ["Matt Damon", "CN Tower", "Cake", "Salvador Dalí", "Death Valley"],
+            ["Sandra Bullock", "Burj Khalifa", "Muffins", "Banksy", "Antelope Canyon"],
+            ["George Clooney", "Empire State Building", "Bagels", "Basquiat", "Bryce Canyon"],
+            ["Julia Roberts", "Leaning Tower of Pisa", "Croissants", "Rothko", "Arches"],
+            ["Denzel Washington", "Arc de Triomphe", "Pretzels", "Warhol", "Capitol Reef"],
+            ["Meryl Streep", "Brandenburg Gate", "Churros", "Hockney", "Joshua Tree"]
+        ];
+        
+        let teams = [];
+        let currentTeamIndex = 0;
+        let currentWords = [];
+        let timer = null;
+        let timeLeft = 30;
+        let roundActive = false;
+        let usedCards = [];
+        let currentRoundScore = 0;
+        let teamOrder = [];
+        
+        function randomizeTeams() {
+            // Get team names first
+            let tempTeams = [];
+            for (let i = 1; i <= 4; i++) {
+                const teamName = document.getElementById(`team${i}`).value.trim();
+                if (teamName) {
+                    tempTeams.push(teamName);
+                }
+            }
+            
+            if (tempTeams.length < 2) {
+                alert('Please enter at least 2 team names before randomizing!');
+                return;
+            }
+            
+            // Shuffle the teams
+            for (let i = tempTeams.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tempTeams[i], tempTeams[j]] = [tempTeams[j], tempTeams[i]];
+            }
+            
+            teamOrder = [...tempTeams];
+            
+            // Display the order
+            const orderDisplay = document.getElementById('teamOrder');
+            orderDisplay.innerHTML = `<strong>Playing Order:</strong> ${teamOrder.join(' → ')}`;
+        }
+
+        function startGame() {
+            // Get team names
+            teams = [];
+            
+            // Use randomized order if available, otherwise use input order
+            if (teamOrder.length > 0) {
+                teamOrder.forEach((teamName, index) => {
+                    teams.push({
+                        name: teamName,
+                        score: 0,
+                        color: ['red', 'blue', 'green', 'yellow'][index]
+                    });
+                });
+            } else {
+                for (let i = 1; i <= 4; i++) {
+                    const teamName = document.getElementById(`team${i}`).value.trim();
+                    if (teamName) {
+                        teams.push({
+                            name: teamName,
+                            score: 0,
+                            color: ['red', 'blue', 'green', 'yellow'][i-1]
+                        });
+                    }
+                }
+            }
+            
+            if (teams.length < 2) {
+                alert('Please enter at least 2 team names!');
+                return;
+            }
+            
+            // Hide setup, show game
+            document.getElementById('gameSetup').style.display = 'none';
+            document.getElementById('gameBoard').style.display = 'block';
+            
+            // Initialize scoreboard
+            updateScoreboard();
+            updateRoundInfo();
+        }
+        
+        function updateScoreboard() {
+            const scoreboard = document.getElementById('scoreboard');
+            scoreboard.innerHTML = '';
+            
+            teams.forEach((team, index) => {
+                const teamDiv = document.createElement('div');
+                teamDiv.className = `team-score ${index === currentTeamIndex ? 'active' : ''}`;
+                teamDiv.innerHTML = `
+                    <div class="team-name" style="color: ${getTeamColor(team.color)}">${team.name}</div>
+                    <div class="team-position">${team.score}/10</div>
+                `;
+                scoreboard.appendChild(teamDiv);
+            });
+        }
+        
+        function getTeamColor(color) {
+            const colors = {
+                red: '#f56565',
+                blue: '#4299e1',
+                green: '#48bb78',
+                yellow: '#ed8936'
+            };
+            return colors[color] || '#667eea';
+        }
+        
+        function updateRoundInfo() {
+            const roundInfo = document.getElementById('roundInfo');
+            roundInfo.innerHTML = `
+                <strong>🎯 ${teams[currentTeamIndex].name}'s Turn</strong><br>
+                <span style="color: #718096;">Get ready to describe words to your teammates!</span>
+            `;
+        }
+        
+        function startRound() {
+            if (roundActive) return;
+            
+            // Get random card
+            let cardIndex;
+            do {
+                cardIndex = Math.floor(Math.random() * gameWords.length);
+            } while (usedCards.includes(cardIndex) && usedCards.length < gameWords.length);
+            
+            if (usedCards.length >= gameWords.length) {
+                usedCards = []; // Reset if all cards used
+            }
+            usedCards.push(cardIndex);
+            
+            currentWords = [...gameWords[cardIndex]];
+            
+            // Show card and controls
+            displayCurrentWord();
+            document.getElementById('gameCard').classList.remove('hidden');
+            document.getElementById('startRoundBtn').classList.add('hidden');
+            document.getElementById('endRoundBtn').classList.remove('hidden');
+            
+            // Start timer
+            timeLeft = 30;
+            roundActive = true;
+            updateTimer();
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                if (timeLeft <= 0) {
+                    playRingSound();
+                    endRound();
+                }
+            }, 1000);
+        }
+        
+        function displayCurrentWord() {
+            const wordsList = document.getElementById('wordsList');
+            wordsList.innerHTML = '';
+            
+            currentWords.forEach((word, index) => {
+                const li = document.createElement('li');
+                li.textContent = word;
+                li.style.padding = '8px 0';
+                li.style.borderBottom = '1px solid #e2e8f0';
+                if (index === currentWords.length - 1) {
+                    li.style.borderBottom = 'none';
+                }
+                wordsList.appendChild(li);
+            });
+        }
+        
+        function updateTimer() {
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = timeLeft;
+            
+            // Play tick sound
+            playTickSound();
+            
+            if (timeLeft <= 10) {
+                timerElement.classList.add('warning');
+            } else {
+                timerElement.classList.remove('warning');
+            }
+        }
+        
+        function playTickSound() {
+            // Create a short tick sound using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+        
+        function playRingSound() {
+            // Create a ringing sound for when timer ends
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Create multiple tones for a ringing effect
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                }, i * 200);
+            }
+        }
+        
+        function adjustScore(change) {
+            currentRoundScore = Math.max(0, Math.min(5, currentRoundScore + change));
+            document.getElementById('scoreDisplay').textContent = currentRoundScore;
+        }
+        
+        function submitScore() {
+            teams[currentTeamIndex].score += currentRoundScore;
+            currentRoundScore = 0;
+            document.getElementById('scoreDisplay').textContent = '0';
+            
+            // Hide score input
+            document.getElementById('scoreInput').classList.add('hidden');
+            
+            // Update scoreboard
+            updateScoreboard();
+            checkWinner();
+            
+            // Next team's turn
+            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+            updateScoreboard();
+            updateRoundInfo();
+        }
+        
+        function endRound() {
+            if (!roundActive) return;
+            
+            roundActive = false;
+            clearInterval(timer);
+            
+            // Hide game controls
+            document.getElementById('gameCard').classList.add('hidden');
+            document.getElementById('startRoundBtn').classList.remove('hidden');
+            document.getElementById('endRoundBtn').classList.add('hidden');
+            
+            // Reset timer display
+            document.getElementById('timer').textContent = '30';
+            document.getElementById('timer').classList.remove('warning');
+            
+            // Show score input
+            document.getElementById('currentTeamName').textContent = teams[currentTeamIndex].name;
+            document.getElementById('scoreInput').classList.remove('hidden');
+            currentRoundScore = 0;
+            document.getElementById('scoreDisplay').textContent = '0';
+        }
+        
+        function checkWinner() {
+            const winner = teams.find(team => team.score >= 10);
+            if (winner) {
+                document.getElementById('winnerText').textContent = `${winner.name} wins with ${winner.score} points!`;
+                document.getElementById('winnerAnnouncement').classList.remove('hidden');
+                
+                // Hide game controls
+                document.getElementById('startRoundBtn').classList.add('hidden');
+            }
+        }
+        
+        function resetGame() {
+            // Reset all game state
+            teams.forEach(team => team.score = 0);
+            currentTeamIndex = 0;
+            usedCards = [];
+            roundActive = false;
+            clearInterval(timer);
+            currentRoundScore = 0;
+            teamOrder = [];
+            
+            // Hide winner announcement and score input
+            document.getElementById('winnerAnnouncement').classList.add('hidden');
+            document.getElementById('scoreInput').classList.add('hidden');
+            
+            // Reset UI
+            document.getElementById('gameCard').classList.add('hidden');
+            document.getElementById('startRoundBtn').classList.remove('hidden');
+            document.getElementById('endRoundBtn').classList.add('hidden');
+            document.getElementById('timer').textContent = '30';
+            document.getElementById('timer').classList.remove('warning');
+            document.getElementById('scoreDisplay').textContent = '0';
+            document.getElementById('teamOrder').innerHTML = '';
+            
+            updateScoreboard();
+            updateRoundInfo();
+        }
+        
+        function goBackToHome() {
+            // Stop any active timer
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+            
+            // Reset all game state
+            teams = [];
+            currentTeamIndex = 0;
+            usedCards = [];
+            roundActive = false;
+            currentRoundScore = 0;
+            teamOrder = [];
+            
+            // Hide game board and show setup
+            document.getElementById('gameBoard').style.display = 'none';
+            document.getElementById('gameSetup').style.display = 'block';
+            
+            // Reset all hidden elements
+            document.getElementById('winnerAnnouncement').classList.add('hidden');
+            document.getElementById('scoreInput').classList.add('hidden');
+            document.getElementById('gameCard').classList.add('hidden');
+            document.getElementById('startRoundBtn').classList.remove('hidden');
+            document.getElementById('endRoundBtn').classList.add('hidden');
+            
+            // Reset timer display
+            document.getElementById('timer').textContent = '30';
+            document.getElementById('timer').classList.remove('warning');
+            document.getElementById('scoreDisplay').textContent = '0';
+            document.getElementById('teamOrder').innerHTML = '';
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f98810a20b73de',t:'MTc2MDYzODQyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
