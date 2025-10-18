@@ -1,2 +1,2 @@
 # HalfAMin
-Thirdy Seconds
+Half A Minute
