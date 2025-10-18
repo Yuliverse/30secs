@@ -1,2 +1,2 @@
-# 30secs
+# HalfAMin
 Thirdy Seconds
