@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -200,6 +198,41 @@
             animation: pulse 1s infinite;
         }
         
+        .timer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            max-width: 400px;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #ed8936 50%, #f56565 100%);
+            border-radius: 10px;
+            transition: width 0.1s linear;
+            width: 100%;
+        }
+        
+        .progress-bar.warning {
+            animation: barPulse 0.5s infinite alternate;
+        }
+        
+        @keyframes barPulse {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
@@ -358,7 +391,12 @@
             <div class="round-info" id="roundInfo"></div>
             
             <div class="game-area">
-                <div class="timer" id="timer">30</div>
+                <div class="timer-container">
+                    <div class="timer" id="timer">30</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
                 
                 <div id="gameCard" class="card hidden">
                     <h3>🎯 Describe these words to your team:</h3>
@@ -398,6 +436,11 @@
     </div>
     
     <footer style="background: rgba(255,255,255,0.1); color: #e2e8f0; text-align: center; padding: 20px; margin-top: 40px; border-radius: 15px;">
+        <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 10px; font-weight: 600;">🤝 Our Partners</div>
+            <a href="https://app.naked.insure/e/4kK5MC2cAHb" target="_blank" rel="noopener noreferrer" style="color: #e2e8f0; text-decoration: underline; margin-right: 20px;">🛡️ Naked Insurance</a>
+            <a href="https://referral.ikhokha.com/uvm8eTNF" target="_blank" rel="noopener noreferrer" style="color: #e2e8f0; text-decoration: underline; margin-right: 20px;">💳 iKhokha Payments</a>
+        </div>
         <div style="margin-bottom: 10px;">
             <a href="https://www.anythinglikewhat.com/contactus" style="color: #e2e8f0; text-decoration: underline; margin-right: 20px;">📧 Contact Us</a>
         </div>
@@ -473,6 +516,16 @@
         let usedCards = [];
         let currentRoundScore = 0;
         let teamOrder = [];
+        
+        // Utility function to shuffle an array
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
         
         function randomizeTeams() {
             // Get team names first
@@ -589,7 +642,8 @@
             }
             usedCards.push(cardIndex);
             
-            currentWords = [...gameWords[cardIndex]];
+            // Shuffle the words from the selected card
+            currentWords = shuffleArray([...gameWords[cardIndex]]);
             
             // Show card and controls
             displayCurrentWord();
@@ -605,7 +659,7 @@
                 timeLeft--;
                 updateTimer();
                 if (timeLeft <= 0) {
-                    playRingSound();
+                    playAlarmSound();
                     endRound();
                 }
             }, 1000);
@@ -629,56 +683,77 @@
         
         function updateTimer() {
             const timerElement = document.getElementById('timer');
+            const progressBar = document.getElementById('progressBar');
+            
             timerElement.textContent = timeLeft;
+            
+            // Update progress bar
+            const percentage = (timeLeft / 30) * 100;
+            progressBar.style.width = percentage + '%';
             
             // Play tick sound
             playTickSound();
             
             if (timeLeft <= 10) {
                 timerElement.classList.add('warning');
+                progressBar.classList.add('warning');
             } else {
                 timerElement.classList.remove('warning');
+                progressBar.classList.remove('warning');
             }
         }
         
         function playTickSound() {
-            // Create a short tick sound using Web Audio API
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.1);
+            try {
+                // Create a short tick sound using Web Audio API
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Different pitch for last 10 seconds
+                const frequency = timeLeft <= 10 ? 1000 : 600;
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (error) {
+                // Fallback if Web Audio API is not supported
+                console.log('Audio not supported');
+            }
         }
         
-        function playRingSound() {
-            // Create a ringing sound for when timer ends
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Create multiple tones for a ringing effect
-            for (let i = 0; i < 3; i++) {
-                setTimeout(() => {
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
-                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.1);
-                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                    
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.3);
-                }, i * 200);
+        function playAlarmSound() {
+            try {
+                // Create a loud alarm sound for when timer ends
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create multiple alarm beeps
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        // Alternating high and low tones for alarm effect
+                        const frequency = i % 2 === 0 ? 1200 : 800;
+                        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.4);
+                        
+                        oscillator.start(audioContext.currentTime);
+                        oscillator.stop(audioContext.currentTime + 0.4);
+                    }, i * 150);
+                }
+            } catch (error) {
+                // Fallback if Web Audio API is not supported
+                console.log('Audio not supported');
             }
         }
         
@@ -719,6 +794,11 @@
             // Reset timer display
             document.getElementById('timer').textContent = '30';
             document.getElementById('timer').classList.remove('warning');
+            
+            // Reset progress bar
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = '100%';
+            progressBar.classList.remove('warning');
             
             // Show score input
             document.getElementById('currentTeamName').textContent = teams[currentTeamIndex].name;
@@ -794,9 +874,14 @@
             // Reset timer display
             document.getElementById('timer').textContent = '30';
             document.getElementById('timer').classList.remove('warning');
+            
+            // Reset progress bar
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = '100%';
+            progressBar.classList.remove('warning');
             document.getElementById('scoreDisplay').textContent = '0';
             document.getElementById('teamOrder').innerHTML = '';
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f98810a20b73de',t:'MTc2MDYzODQyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9906d789e7c74ed4',t:'MTc2MDc3Nzk5MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
